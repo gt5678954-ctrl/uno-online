@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNO Dunia Multiplayer Online</title>
+    <script src="https://socket.io"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #222; color: white; text-align: center; margin: 0; padding: 20px; }
+        .hand { display: flex; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+        .card { width: 70px; height: 100px; border-radius: 8px; margin: 5px; background: red; display: inline-block; line-height: 100px; font-weight: bold; cursor: pointer; color: white; border: 2px solid white; }
+        select, input, button { padding: 10px; margin: 10px; font-size: 16px; border-radius: 5px; border: none; }
+        button { background: #ffaa00; color: black; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h1>UNO Online Dunia 🃏</h1>
+    
+    <div id="lobby">
+        <input type="text" id="username" placeholder="Nama Kamu"><br>
+        <input type="text" id="roomCode" placeholder="Kode Room (Contoh: MABAR)"><br>
+        <label for="unoVariant">Pilih Variasi UNO:</label><br>
+        <select id="unoVariant">
+            <option value="Classic">UNO Klasik (Standar)</option>
+            <option value="NoMercy">UNO No Mercy (Kejam +10)</option>
+            <option value="Flip">UNO Flip! (Dark Side)</option>
+        </select><br>
+        <button onclick="joinGame()">Buat / Gabung Game</button>
+    </div>
+
+    <div id="game-board" style="display:none;">
+        <h3>Room: <span id="displayRoom"></span> | Varian: <span id="displayVariant"></span></h3>
+        <div id="deck" class="card" style="background: gray;">Ambil</div>
+        <div id="discard" class="card" style="background: blue;">Atas</div>
+        <h2>Kartu Kamu:</h2>
+        <div id="myHand" class="hand"></div>
+    </div>
+
+    <script>
+        // CATATAN: Ganti URL di bawah dengan link backend Render kamu nanti setelah di-hosting
+        const socket = io('http://localhost:3000'); 
+        let currentRoom = "";
+
+        function joinGame() {
+            const username = document.getElementById('username').value;
+            const roomCode = document.getElementById('roomCode').value;
+            const unoVariant = document.getElementById('unoVariant').value;
+            
+            if(!username || !roomCode) return alert("Isi nama dan kode room!");
+
+            currentRoom = roomCode;
+            socket.emit('joinRoom', { roomCode, username, unoVariant });
+
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('game-board').style.display = 'block';
+            document.getElementById('displayRoom').innerText = roomCode;
+            document.getElementById('displayVariant').innerText = unoVariant;
+        }
+
+        socket.on('roomUpdate', (roomData) => {
+            console.log("Data room terbaru:", roomData);
+        });
+    </script>
+</body>
+</html>
